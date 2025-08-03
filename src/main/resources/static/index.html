@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance Tracker</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-wallet"></i> Personal Finance Tracker</h1>
+                <div class="auth-buttons" id="authButtons">
+                    <button class="btn btn-primary" onclick="showLoginForm()">Login</button>
+                    <button class="btn btn-secondary" onclick="showRegisterForm()">Register</button>
+                </div>
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <span id="userName"></span>
+                    <button class="btn btn-danger" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Auth Forms -->
+            <div class="auth-container" id="authContainer">
+                <!-- Login Form -->
+                <div class="auth-form" id="loginForm" style="display: none;">
+                    <h2>Login</h2>
+                    <form onsubmit="login(event)">
+                        <div class="form-group">
+                            <label for="loginUsername">Username</label>
+                            <input type="text" id="loginUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                </div>
+
+                <!-- Register Form -->
+                <div class="auth-form" id="registerForm" style="display: none;">
+                    <h2>Register</h2>
+                    <form onsubmit="register(event)">
+                        <div class="form-group">
+                            <label for="regUsername">Username</label>
+                            <input type="text" id="regUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regEmail">Email</label>
+                            <input type="email" id="regEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regPassword">Password</label>
+                            <input type="password" id="regPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regFirstName">First Name</label>
+                            <input type="text" id="regFirstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regLastName">Last Name</label>
+                            <input type="text" id="regLastName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regMonthlyBudget">Monthly Budget</label>
+                            <input type="number" id="regMonthlyBudget" step="0.01">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="dashboard" id="dashboard" style="display: none;">
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-arrow-up text-success"></i>
+                            <h3>Total Income</h3>
+                        </div>
+                        <div class="card-body">
+                            <span class="amount" id="totalIncome">$0.00</span>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-arrow-down text-danger"></i>
+                            <h3>Total Expenses</h3>
+                        </div>
+                        <div class="card-body">
+                            <span class="amount" id="totalExpenses">$0.00</span>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-balance-scale text-info"></i>
+                            <h3>Net Amount</h3>
+                        </div>
+                        <div class="card-body">
+                            <span class="amount" id="netAmount">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="showAddTransactionForm()">
+                        <i class="fas fa-plus"></i> Add Transaction
+                    </button>
+                    <button class="btn btn-secondary" onclick="showAddCategoryForm()">
+                        <i class="fas fa-tags"></i> Add Category
+                    </button>
+                    <button class="btn btn-info" onclick="showAddBudgetForm()">
+                        <i class="fas fa-chart-pie"></i> Add Budget
+                    </button>
+                </div>
+
+                <!-- Transaction Form -->
+                <div class="form-modal" id="transactionForm" style="display: none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="hideTransactionForm()">&times;</span>
+                        <h2>Add Transaction</h2>
+                        <form onsubmit="addTransaction(event)">
+                            <div class="form-group">
+                                <label for="transactionDescription">Description</label>
+                                <input type="text" id="transactionDescription" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="transactionAmount">Amount</label>
+                                <input type="number" id="transactionAmount" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="transactionType">Type</label>
+                                <select id="transactionType" required>
+                                    <option value="INCOME">Income</option>
+                                    <option value="EXPENSE">Expense</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="transactionCategory">Category</label>
+                                <select id="transactionCategory" required>
+                                    <option value="">Select Category</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="transactionDate">Date</label>
+                                <input type="date" id="transactionDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="transactionPaymentMethod">Payment Method</label>
+                                <input type="text" id="transactionPaymentMethod">
+                            </div>
+                            <div class="form-group">
+                                <label for="transactionNotes">Notes</label>
+                                <textarea id="transactionNotes"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Transaction</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Category Form -->
+                <div class="form-modal" id="categoryForm" style="display: none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="hideCategoryForm()">&times;</span>
+                        <h2>Add Category</h2>
+                        <form onsubmit="addCategory(event)">
+                            <div class="form-group">
+                                <label for="categoryName">Name</label>
+                                <input type="text" id="categoryName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="categoryType">Type</label>
+                                <select id="categoryType" required>
+                                    <option value="INCOME">Income</option>
+                                    <option value="EXPENSE">Expense</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="categoryDescription">Description</label>
+                                <textarea id="categoryDescription"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="categoryColor">Color</label>
+                                <input type="color" id="categoryColor" value="#007bff">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Category</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Budget Form -->
+                <div class="form-modal" id="budgetForm" style="display: none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="hideBudgetForm()">&times;</span>
+                        <h2>Add Budget</h2>
+                        <form onsubmit="addBudget(event)">
+                            <div class="form-group">
+                                <label for="budgetAmount">Budget Amount</label>
+                                <input type="number" id="budgetAmount" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="budgetStartDate">Start Date</label>
+                                <input type="date" id="budgetStartDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="budgetEndDate">End Date</label>
+                                <input type="date" id="budgetEndDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="budgetCategory">Category (Optional)</label>
+                                <select id="budgetCategory">
+                                    <option value="">No Category</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="budgetDescription">Description</label>
+                                <textarea id="budgetDescription"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Budget</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Transactions List -->
+                <div class="transactions-section">
+                    <h2>Recent Transactions</h2>
+                    <div class="transactions-list" id="transactionsList">
+                        <!-- Transactions will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>
