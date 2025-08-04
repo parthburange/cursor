@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillShare Portal - Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            background: #f8f9fa;
+            min-height: 100vh;
+            display: block;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #495057;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .category-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .public-badge {
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+        
+        .private-badge {
+            background: #6c757d;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <div>
+                    <h1>Welcome, <span id="username">User</span>!</h1>
+                    <p>Share your skills and discover others</p>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+            
+            <div class="dashboard-content">
+                <!-- Add Skill Form -->
+                <div class="skill-form">
+                    <h2 class="section-title">Add New Skill</h2>
+                    <form id="addSkillForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="skillName">Skill Name</label>
+                                <input type="text" id="skillName" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="skillCategory">Category</label>
+                                <input type="text" id="skillCategory" name="category" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="skillDescription">Description</label>
+                            <textarea id="skillDescription" name="description" rows="4" style="width: 100%; padding: 15px; border: 2px solid #e9ecef; border-radius: 10px; font-size: 1rem; resize: vertical;" required></textarea>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="isPublic" name="isPublic" checked>
+                            <label for="isPublic">Make this skill public</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Skill</button>
+                    </form>
+                </div>
+                
+                <!-- My Skills Section -->
+                <div>
+                    <h2 class="section-title">My Skills</h2>
+                    <div id="mySkills" class="skill-grid">
+                        <!-- Skills will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- All Public Skills Section -->
+                <div style="margin-top: 40px;">
+                    <h2 class="section-title">All Public Skills</h2>
+                    <div id="allSkills" class="skill-grid">
+                        <!-- All skills will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            const username = localStorage.getItem('username');
+            
+            if (!token || !username) {
+                window.location.href = '/index.html';
+                return;
+            }
+            
+            document.getElementById('username').textContent = username;
+            loadMySkills();
+            loadAllSkills();
+        });
+
+        // Add skill form submission
+        document.getElementById('addSkillForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get('name'),
+                description: formData.get('description'),
+                category: formData.get('category'),
+                isPublic: formData.get('isPublic') === 'on'
+            };
+            
+            try {
+                const response = await fetch('/skills/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    alert('Skill added successfully!');
+                    e.target.reset();
+                    loadMySkills();
+                    loadAllSkills();
+                } else {
+                    const result = await response.json();
+                    alert(result.message || 'Failed to add skill');
+                }
+            } catch (error) {
+                alert('Network error. Please try again.');
+            }
+        });
+
+        async function loadMySkills() {
+            try {
+                const response = await fetch('/skills/my', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const skills = await response.json();
+                    displaySkills(skills, 'mySkills');
+                }
+            } catch (error) {
+                console.error('Error loading my skills:', error);
+            }
+        }
+
+        async function loadAllSkills() {
+            try {
+                const response = await fetch('/skills/all');
+                
+                if (response.ok) {
+                    const skills = await response.json();
+                    displaySkills(skills, 'allSkills');
+                }
+            } catch (error) {
+                console.error('Error loading all skills:', error);
+            }
+        }
+
+        function displaySkills(skills, containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (skills.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d; grid-column: 1 / -1;">No skills found.</p>';
+                return;
+            }
+            
+            container.innerHTML = skills.map(skill => `
+                <div class="skill-card">
+                    <h3>${skill.name}</h3>
+                    <p>${skill.description}</p>
+                    <div class="skill-meta">
+                        <span class="category-badge">${skill.category}</span>
+                        <span class="${skill.isPublic ? 'public-badge' : 'private-badge'}">
+                            ${skill.isPublic ? 'Public' : 'Private'}
+                        </span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.8rem; color: #868e96;">
+                        By: ${skill.username} | ${new Date(skill.createdAt).toLocaleDateString()}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            window.location.href = '/index.html';
+        }
+    </script>
+</body>
+</html>
